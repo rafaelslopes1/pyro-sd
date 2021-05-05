@@ -1,6 +1,11 @@
 import random
-import Pyro4
+
+#import Pyro4
+import Pyro5.api as p5
 import json
+
+import Pyro5.server
+
 from perfil import Perfil
 import time
 
@@ -120,6 +125,7 @@ def listarTodos():
         print('\n')
 
 
+@Pyro5.server.expose
 def listarPerfil(email):
     perfil = procura(email)
     if perfil == None:
@@ -132,11 +138,22 @@ with open('perfis.json', 'r', encoding='utf-8') as perfisJson:
     perfis = json.load(perfisJson)
 perfisJson.close()
 
-#capturaXP('deidiane_assuncao@outlook.com')
-#for pessoa in perfis:
-#    Perfil(pessoa).imprime()
+'''
+capturaXP('deidiane_assuncao@outlook.com')
+for pessoa in perfis:
+    Perfil(pessoa).imprime()
 inicio = time.time()
 for pessoa in perfis:
     Perfil(pessoa).imprime()
 fim = time.time()
 print(fim - inicio)
+'''
+
+daemon = p5.Daemon()
+
+uri = daemon.register(listarPerfil)
+ns = p5.locate_ns()
+ns.register('obj', uri)
+#print(uri)
+
+daemon.requestLoop()
